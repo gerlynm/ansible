@@ -1,0 +1,32 @@
+---
+- name: Install Prerequisites and Jenkins on Ubuntu
+  hosts: jenkins
+  become: yes  # Run tasks with elevated privileges (sudo)
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install OpenJDK (prerequisite for Jenkins)
+      apt:
+        name: openjdk-11-jre
+        state: present
+
+    - name: Add Jenkins APT key to keyring
+      shell: curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+    - name: Add Jenkins APT repository
+      lineinfile:
+        path: /etc/apt/sources.list.d/jenkins.list
+        line: 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/'
+        create: yes
+
+    - name: Update apt cache after adding Jenkins repository
+      apt:
+        update_cache: yes
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present

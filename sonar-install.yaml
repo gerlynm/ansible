@@ -1,0 +1,38 @@
+---
+- name: Install Prerequisites and SonarQube on Ubuntu
+  hosts: sonar
+  become: yes  # Run tasks with elevated privileges (sudo)
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install OpenJDK (prerequisite for SonarQube)
+      apt:
+        name: openjdk-11-jre
+        state: present
+
+    - name: Add SonarQube APT key to keyring
+      apt_key:
+        url: https://binaries.sonarsource.com/sonarqube/SonarQube%20CE%20Plugin/public.key
+
+    - name: Add SonarQube APT repository
+      apt_repository:
+        repo: deb https://binaries.sonarsource.com/sonarqube/SonarQube%20CE%20Plugin/deb/ sonarqube main
+        state: present
+
+    - name: Update apt cache after adding SonarQube repository
+      apt:
+        update_cache: yes
+
+    - name: Install SonarQube
+      apt:
+        name: sonarqube
+        state: present
+
+    - name: Start SonarQube service
+      systemd:
+        name: sonarqube
+        enabled: yes
+        state: started
